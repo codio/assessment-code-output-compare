@@ -1,0 +1,12 @@
+{
+  "name": "Standard Code Test",
+  "type": "assessment",
+  "properties": {
+    "type": "code-output-compare",
+    "icon": "./icon.svg",
+    "defaultHeight": 500,
+    "gradingControls": {
+
+    }
+  }
+}
