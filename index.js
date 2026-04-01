@@ -5,6 +5,18 @@
   let showAsDiff = false
   let currentData = null
 
+  const LONG_OUTPUT_LENGTH = 20000
+
+  const isEmptyObject = (obj) => {
+    for (const prop in obj) {
+      if (Object.hasOwn(obj, prop)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   const updateProcessing = (status) => {
     processing = status
     updateHtml()
@@ -65,17 +77,46 @@
   }
 
   const hasDiff = () => {
-    // todo
+    if (!currentData?.result?.output) {
+      return false
+    }
+    let parsed
+    try {
+      parsed = JSON.parse(currentData?.result.output)
+      if (!parsed.sequence) {
+        return false
+      }
+    } catch {
+      return false
+    }
+
+    return parsed.sequence.some((item, pos) => {
+      if (item && !item.passed) {
+        const showExpectedAnswer = window.codioAssessmentsHelper.calculateShowExpectedAnswer(
+          assessmentOptions.eduStartedAssignment,
+          assessment.source.showExpectedAnswerOption
+        )
+        const showAnswerFromSource = assessmentOptions.showAsTeacher || showExpectedAnswer
+        const sourceSequence = assessment.source.sequence && assessment.source.sequence[pos]
+        const sourceExpectedOutput = assessment.source.expectedOutputs && assessment.source.expectedOutputs[pos]
+        const resultExpectedOutput = !assessment.source.sequence &&
+          currentData?.result?.expectedOutputs && currentData?.result?.expectedOutputs[pos]
+        const expectedResult = (showAnswerFromSource && (sourceSequence || sourceExpectedOutput)) ||
+          resultExpectedOutput
+        return !!expectedResult
+      }
+      return false
+    })
   }
 
   const updateFooterButtons = () => {
     const assessmentState = getAssessmentState()
-    const {teacherInStudentsProject, showModify, isDisabled, canAnswerAgain, passed, answered} = assessmentState
+    const {teacherInStudentsProject, showModify, isDisabled, canAnswerAgain, answered} = assessmentState
 
     const checkVisibility = !showModify && assessmentOptions.useSubmitButtons
     const checkBtn = $('.check-button')
     updateVisibility(checkBtn, checkVisibility)
-    $('.check-button').attr('disabled', isDisabled)
+    checkBtn.attr('disabled', isDisabled)
 
     const unblockVisibility = !teacherInStudentsProject && showModify
     updateVisibility($('.unblock-button'), unblockVisibility)
@@ -126,8 +167,159 @@
     }
   }
 
+  const onExpandClick = () => {
+    // todo expand action
+  }
+
+  const getValidHtml = (text) => {
+    return new DOMParser().parseFromString(text, 'text/html').querySelector("body").innerHTML
+  }
+
+  const diffOutput = (expectedOutput, output) => {
+    const dmp = new window.DiffMatchPatch()
+    const pattern_para = /\n/g
+    const diff = dmp.diff_main(output, expectedOutput)
+    dmp.diff_cleanupSemantic(diff)
+    const diffItems = diff.map(item => {
+      const text = item[1].replace(pattern_para, '&para;<br>')
+      switch (item[0]) {
+        case 1:
+          return `<ins class='codio-output-diff-ins'>${getValidHtml(text)}</ins>`
+        case -1:
+          return `<del class='codio-output-diff-del'>${getValidHtml(text)}</del>`
+        case 0:
+        default:
+          return getValidHtml(text)
+      }
+    })
+
+    return `<div class='codio-output-diff'><pre>${diffItems.join('')}</pre></div>`
+  }
+
+  const renderOutput = () => {
+    const {showAsTeacher, eduStartedAssignment} = assessmentOptions
+    const result = currentData?.result
+    const currentState = processing ? window.codioAssessmentsHelper.States.PROGRESS : result?.state
+    const resultClasses = `codio-assessment-result-output codio-assessment-result-output-${currentState}`
+    let output = null
+    let currentLimit = LONG_OUTPUT_LENGTH
+
+    function cutOutput(inputText) {
+      return inputText.length < currentLimit ? inputText : inputText.substring(0, currentLimit) + '\n...'
+    }
+
+    if (result?.output) {
+      try {
+        const parsed = JSON.parse(result.output)
+        const sequenceSize = parsed?.sequence.length || 0
+        if (sequenceSize > 0) {
+          currentLimit =  LONG_OUTPUT_LENGTH / sequenceSize
+        }
+        if (parsed.sequence) {
+          output = parsed.sequence.map((item, pos) => {
+            let state = `<span class='codio-assessment-result-error-text'>failed</span>`
+            let reason = ''
+            let feedback = ''
+            if (item && item.passed) {
+              state = `<span class='codio-assessment-result-success-text'>passed</span>`
+            } else {
+              let expectedStr = ''
+              const showExpectedAnswer = window.codioAssessmentsHelper.calculateShowExpectedAnswer(
+                eduStartedAssignment,
+                assessment.source.showExpectedAnswerOption
+              )
+              const showAnswerFromSource = showAsTeacher || showExpectedAnswer
+              const sourceSequence = assessment.source.sequence && assessment.source.sequence[pos]
+              const sourceExpectedOutput = assessment.source.expectedOutputs &&
+                !isEmptyObject(assessment.source.expectedOutputs[pos]) &&
+                assessment.source.expectedOutputs[pos]
+              const resultExpectedOutput = !assessment.source.sequence &&
+                result.expectedOutputs && !isEmptyObject(result.expectedOutputs[pos]) && result.expectedOutputs[pos]
+              const expectedResult = (showAnswerFromSource && (sourceSequence || sourceExpectedOutput)) ||
+                resultExpectedOutput
+              if (expectedResult) {
+                if (showAsDiff) {
+                  const truncatedOutput = cutOutput(item.stdout + item.stderr)
+                  reason = diffOutput(expectedResult.output, truncatedOutput)
+                } else {
+                  const escapedExpectedOutput = window.codioAssessmentsHelper.escapeHTML(expectedResult.output)
+                  expectedStr = `Expected:<div class='codio-expected-output-text'>${escapedExpectedOutput}</div>`
+
+                  const outputText = cutOutput(window.codioAssessmentsHelper.escapeHTML(item.stdout + item.stderr))
+                  const outputStr = `Output:<div class='codio-output-text'>${outputText}</div>`
+
+                  reason = `<pre>${outputStr}${expectedStr}</pre>`
+                }
+              }
+            }
+            if (!item.passed) {
+              const sourceSequence = assessment.source.sequence && assessment.source.sequence[pos]
+              const sourceFeedback = sourceSequence && sourceSequence.showFeedback && sourceSequence.feedback
+              const resultFeedbackObject = !assessment.source.sequence && assessment.source.feedbacks &&
+                assessment.source.feedbacks[pos]
+              const feedbackToShow = sourceFeedback || (resultFeedbackObject.show && resultFeedbackObject.feedback)
+              if (feedbackToShow && !showAsDiff) {
+                const escapedFeedback = window.codioAssessmentsHelper.escapeHTML(feedbackToShow)
+                feedback = `<pre>Feedback:<div class='codio-feedback-text'>${escapedFeedback}</div></pre>`
+              }
+            }
+            return `<div>Check ${pos + 1} ${state}${reason}${feedback}</div>`
+          }).join('')
+        } else if (parsed.error) {
+          const errorOutput = cutOutput(parsed.error)
+          output = `<div>Error: ${errorOutput}</div>`
+        }
+      } catch {
+        output = cutOutput(result.output)
+      }
+    }
+    const outputEl = $(`<div class="${resultClasses}"></div>`)
+    outputEl.attr('tabIndex', 0)
+    outputEl.attr('aria-label', `Scrollable feedback ${assessment.source.showName ? assessment.source.name : ''}`)
+    outputEl.html(result?.state !== window.codioAssessmentsHelper.States.RESET ? output : '')
+
+    return outputEl
+  }
+
   const renderResult = () => {
-    // todo render result
+    const assessmentState = getAssessmentState()
+    const resultBlock = $('.codio-assessment-results-block')
+    resultBlock.empty()
+    if (!assessmentState.answered && !processing) {
+      return
+    }
+    const result = currentData?.result
+    const state = processing ? window.codioAssessmentsHelper.States.PROGRESS : result?.state
+    const resultEl = $(`<div class="codio-assessment-result ${state}"></div>`)
+
+    const assessmentStatus = window.codioAssessmentsHelper.getAssessmentResultStatus(
+      assessment.source, result, processing
+    )
+    const iconStr = window.codioAssessmentsHelper.getIconByResultStatus(assessmentStatus)
+    const iconEl = $(iconStr).addClass('codio-assessment-result-status-icon')
+    const iconContainer = $('<div class="codio-assessment-result-icon-container"></div>')
+    iconContainer.append(iconEl)
+    resultEl.append(iconContainer)
+    const resultInfoContainer = $('<div class="codio-assessment-result-result-info-container"></div>')
+
+    if (result?.timestamp) {
+      const timestamp = new Date(result.timestamp).toLocaleString()
+      const timestampEl = $(`
+<div class="codio-assessment-last-run">LAST RUN&nbsp;
+<span class="codio-assessment-last-run-time">on ${timestamp}</span>
+</div>
+`)
+      resultInfoContainer.append(timestampEl)
+    }
+    resultInfoContainer.append(renderOutput())
+
+    const resultActionsContainer = $('<div class="codio-assessment-result-actions-container"></div>')
+    const expandButton = $('<button class="codio-assessment-result-actions-expand" title="Expand output"></button>')
+    expandButton.attr('aria-label', `Expand output ${assessment.source.showName ? assessment.source.name : ''}`)
+    expandButton.on('click', onExpandClick)
+    resultActionsContainer.append(expandButton)
+    resultEl.append(resultActionsContainer)
+    resultBlock.append(resultEl)
   }
 
   const getAssessmentState = () => {
