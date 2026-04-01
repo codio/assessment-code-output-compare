@@ -7,6 +7,102 @@
 
   const LONG_OUTPUT_LENGTH = 20000
 
+  const dummyResult = {
+    "points": 40,
+    "guidance": "<p><strong>Rationale</strong></p>\n",
+    "usedAttempts": 1,
+    "timestamp": "2026-04-01T10:23:33.229Z",
+    "code": 2,
+    "output": "{\"sequence\": [{\"returnCode\": 0, \"stderr\": \"\", \"passed\": true, \"stdout\": \"5\\n\"}, {\"returnCode\": 0, \"stderr\": \"\", \"passed\": true, \"stdout\": \"4\\n\"}, {\"returnCode\": 0, \"stderr\": \"\", \"passed\": false, \"stdout\": \"6\\n\"}, {\"returnCode\": 0, \"stderr\": \"\", \"passed\": false, \"stdout\": \"2\\n\"}, {\"returnCode\": 0, \"stderr\": \"\", \"passed\": false, \"stdout\": \"2\\n\"}]}",
+    "state": "pass"
+  }
+  const dummySource = {
+    "name": "standard partial arguments count",
+    "showName": true,
+    "settings": {
+      "instructions": "<p><em>Instructions here</em></p>\n",
+      "command": "python code_tests/standard_partial_argumentscount.py",
+      "preExecuteCommand": "",
+      "timeout": 30
+    },
+    "options": {
+      "ignoreCase": false,
+      "ignoreWhitespaces": true,
+      "ignoreNewline": true,
+      "matchSubstring": false
+    },
+    "metadata": {
+      "tags": [
+        {
+          "name": "Assessment Type",
+          "value": "Standard Code Test"
+        },
+        {
+          "name": "Content",
+          "value": "code test"
+        },
+        {
+          "name": "Programming Language",
+          "value": "python"
+        }
+      ],
+      "files": [
+        "code_tests/standard_partial_argumentscount.py"
+      ],
+      "opened": []
+    },
+    "bloomsObjectiveLevel": "1",
+    "learningObjectives": "learning",
+    "guidance": "<p><strong>Rationale</strong></p>\n",
+    "showGuidanceAfterResponseOption": {
+      "type": "Always"
+    },
+    "maxAttemptsCount": 0,
+    "points": 100,
+    "showExpectedAnswerOption": {
+      "type": "Always"
+    },
+    "arePartialPointsAllowed": true,
+    "useMaximumScore": false,
+    "sequence": [
+      {
+        "arguments": "one two three four",
+        "input": "",
+        "output": "5",
+        "showFeedback": false,
+        "feedback": ""
+      },
+      {
+        "arguments": "1 2 3",
+        "input": "",
+        "output": "4",
+        "showFeedback": false,
+        "feedback": ""
+      },
+      {
+        "arguments": "1 2 3 4 5",
+        "input": "",
+        "output": "10",
+        "showFeedback": false,
+        "feedback": ""
+      },
+      {
+        "arguments": "1",
+        "input": "",
+        "output": "4",
+        "showFeedback": false,
+        "feedback": ""
+      },
+      {
+        "arguments": "1",
+        "input": "",
+        "output": "4",
+        "showFeedback": false,
+        "feedback": ""
+      }
+    ]
+  }
+
   const isEmptyObject = (obj) => {
     for (const prop in obj) {
       if (Object.hasOwn(obj, prop)) {
@@ -25,6 +121,10 @@
   const applyStateInitial = (data) => {
     const {state, result, ...dataWithoutState} = data
     assessment = dataWithoutState.assessment
+    // todo remove dummy start
+    assessment.source = dummySource
+    // todo remove dummy end
+
     assessmentOptions = dataWithoutState.options
 
     render()
@@ -32,6 +132,9 @@
 
   const applyState = (data) => {
     console.log('assessment iframe applyState', data)
+    // todo remove dummy start
+    data.result  = dummyResult
+    // todo remove dummy end
     currentData = data
     if (!assessment) {
       applyStateInitial(data)
@@ -169,6 +272,14 @@
 
   const onExpandClick = () => {
     // todo expand action
+    // const {result} = currentData || {}
+    // const data = {
+    //   outputs: getOutputs(),
+    //   view: showAsDiff ? 'diff' : 'output',
+    //   timestamp: result?.timestamp,
+    //   state: processing ? window.codioAssessmentsHelper.States.PROGRESS : result?.state,
+    //   iconState: getAssessmentStatusIconState(source, result, processing),
+    // }
   }
 
   const getValidHtml = (text) => {
@@ -184,9 +295,9 @@
       const text = item[1].replace(pattern_para, '&para;<br>')
       switch (item[0]) {
         case 1:
-          return `<ins class='codio-output-diff-ins'>${getValidHtml(text)}</ins>`
+          return `<ins class='codio-assessment-output-diff-ins'>${getValidHtml(text)}</ins>`
         case -1:
-          return `<del class='codio-output-diff-del'>${getValidHtml(text)}</del>`
+          return `<del class='codio-assessment-output-diff-del'>${getValidHtml(text)}</del>`
         case 0:
         default:
           return getValidHtml(text)
@@ -243,10 +354,10 @@
                   reason = diffOutput(expectedResult.output, truncatedOutput)
                 } else {
                   const escapedExpectedOutput = window.codioAssessmentsHelper.escapeHTML(expectedResult.output)
-                  expectedStr = `Expected:<div class='codio-expected-output-text'>${escapedExpectedOutput}</div>`
+                  expectedStr = `Expected:<div class='codio-assessment-expected-output-text'>${escapedExpectedOutput}</div>`
 
                   const outputText = cutOutput(window.codioAssessmentsHelper.escapeHTML(item.stdout + item.stderr))
-                  const outputStr = `Output:<div class='codio-output-text'>${outputText}</div>`
+                  const outputStr = `Output:<div class='codio-assessment-output-text'>${outputText}</div>`
 
                   reason = `<pre>${outputStr}${expectedStr}</pre>`
                 }
@@ -263,11 +374,11 @@
                 feedback = `<pre>Feedback:<div class='codio-feedback-text'>${escapedFeedback}</div></pre>`
               }
             }
-            return `<div>Check ${pos + 1} ${state}${reason}${feedback}</div>`
+            return `<div class="codio-assessment-output-line">Check ${pos + 1} ${state}${reason}${feedback}</div>`
           }).join('')
         } else if (parsed.error) {
           const errorOutput = cutOutput(parsed.error)
-          output = `<div>Error: ${errorOutput}</div>`
+          output = `<div class="codio-assessment-output-line">Error: ${errorOutput}</div>`
         }
       } catch {
         output = cutOutput(result.output)
@@ -296,7 +407,7 @@
       assessment.source, result, processing
     )
     const iconStr = window.codioAssessmentsHelper.getIconByResultStatus(assessmentStatus)
-    const iconEl = $(iconStr).addClass('codio-assessment-result-status-icon')
+    const iconEl = $(iconStr).addClass(`codio-assessment-result-status-icon ${assessmentStatus}`)
     const iconContainer = $('<div class="codio-assessment-result-icon-container"></div>')
     iconContainer.append(iconEl)
     resultEl.append(iconContainer)
@@ -312,9 +423,14 @@
       resultInfoContainer.append(timestampEl)
     }
     resultInfoContainer.append(renderOutput())
+    resultEl.append(resultInfoContainer)
 
     const resultActionsContainer = $('<div class="codio-assessment-result-actions-container"></div>')
-    const expandButton = $('<button class="codio-assessment-result-actions-expand" title="Expand output"></button>')
+    const expandButton = $(`
+<button class="codio-assessment-result-actions-expand" title="Expand output">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M10 21v-2H6.41l4.5-4.5l-1.41-1.41l-4.5 4.5V14H3v7zm4.5-10.09l4.5-4.5V10h2V3h-7v2h3.59l-4.5 4.5z"/></svg>
+</button>
+`)
     expandButton.attr('aria-label', `Expand output ${assessment.source.showName ? assessment.source.name : ''}`)
     expandButton.on('click', onExpandClick)
     resultActionsContainer.append(expandButton)
@@ -344,6 +460,12 @@
     }
   }
 
+  const onToggleDiffView = () => {
+    showAsDiff = !showAsDiff
+    renderResult()
+    updateFooterButtons()
+  }
+
   const updateHtml = () => {
     if (!assessment) {
       return
@@ -361,6 +483,7 @@
     $('.check-button').on('click', onCheck)
     $('.unblock-button').on('click', onUnblock)
     $('.reset-button').on('click', onReset)
+    $('.diff-button').on('click', onToggleDiffView)
 
     window.codioAssessmentsHelper.addBodyHeightListener()
   }

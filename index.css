@@ -1,0 +1,97 @@
+.codio-assessment-result {
+  display: flex;
+  gap: 20px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 2px;
+  line-height: 25px;
+  position: relative;
+  padding: 1em 20px;
+  font-weight: normal;
+  margin: 1em 0;
+  min-height: 30px;
+}
+
+.codio-assessment-result:before {
+  position: absolute;
+  display: inline-block;
+  left: 19px;
+  bottom: 100%;
+  content: '';
+  border-left: 10px solid transparent;
+  border-bottom: 11px solid #ddd;
+  border-right: 10px solid transparent;
+}
+
+.codio-assessment-result:after {
+  position: absolute;
+  display: inline-block;
+  left: 20px;
+  bottom: 100%;
+  content: '';
+  border-left: 8px solid transparent;
+  border-bottom: 9px solid #fff;
+  border-right: 9px solid transparent;
+}
+
+.codio-assessment-result-status-icon.passed {
+  color: #008000;
+}
+
+.codio-assessment-result-status-icon.failed {
+  color: #de0d23;
+}
+
+.codio-assessment-result-status-icon.partial {
+  color: #eb7100;
+}
+
+.codio-assessment-result-result-info-container {
+  flex: 1;
+}
+
+.codio-assessment-last-run-time {
+  color: #888;
+}
+
+.codio-assessment-output-line {
+  font-weight: bold;
+}
+
+.codio-assessment-result-success-text {
+  color: #468847;
+}
+
+.codio-assessment-result-error-text {
+  color: #b94a48;
+}
+
+.codio-assessment-output-text {
+  background-color: #ffe6e6;
+}
+
+.codio-assessment-expected-output-text {
+  background-color: #e9fff2;
+}
+
+.codio-assessment-output-diff-del {
+  background-color: #ffe6e6;
+}
+
+.codio-assessment-output-diff-ins {
+  background-color: #e9fff2;
+}
+
+.codio-assessment-result-actions-expand {
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: no-repeat;
+  cursor: pointer;
+  opacity: 0.8;
+
+  &:hover {
+    opacity: 1;
+  }
+}
