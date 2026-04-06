@@ -6,7 +6,14 @@
     "icon": "./icon.svg",
     "defaultHeight": 500,
     "gradingControls": {
-
+      "points": true,
+      "allowPartialPoints": true,
+      "useMaximumScore": true,
+      "commandOptions": true,
+      "testSequence": true,
+      "showExpectedAnswer": true,
+      "definedNumberOfAttempts": true,
+      "rationale": true
     }
   }
 }

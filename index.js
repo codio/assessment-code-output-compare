@@ -279,6 +279,7 @@
     //   timestamp: result?.timestamp,
     //   state: processing ? window.codioAssessmentsHelper.States.PROGRESS : result?.state,
     //   iconState: getAssessmentStatusIconState(source, result, processing),
+    //   focusedElId
     // }
   }
 
