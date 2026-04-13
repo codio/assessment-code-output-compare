@@ -4,6 +4,7 @@
   let processing = false
   let showAsDiff = false
   let currentData = null
+  let expanded = false
 
   const LONG_OUTPUT_LENGTH = 20000
 
@@ -115,7 +116,7 @@
 
   const updateProcessing = (status) => {
     processing = status
-    updateHtml()
+    refreshResultAndFooter()
   }
 
   const applyStateInitial = (data) => {
@@ -141,13 +142,15 @@
       return
     }
     if (data.state) {
-      updateHtml()
+      renderResult()
+      refreshResultAndFooter()
       renderGuidance()
       return
     }
     // reset
     if (currentData.state && !data.state) {
-      updateHtml()
+      renderResult()
+      refreshResultAndFooter()
       renderGuidance()
     }
   }
@@ -271,16 +274,10 @@
   }
 
   const onExpandClick = () => {
-    // todo expand action
-    // const {result} = currentData || {}
-    // const data = {
-    //   outputs: getOutputs(),
-    //   view: showAsDiff ? 'diff' : 'output',
-    //   timestamp: result?.timestamp,
-    //   state: processing ? window.codioAssessmentsHelper.States.PROGRESS : result?.state,
-    //   iconState: getAssessmentStatusIconState(source, result, processing),
-    //   focusedElId
-    // }
+    const {EXPAND, COLLAPSE} = window.codioAssessmentsHelper.METHODS
+    const action = expanded ? COLLAPSE :EXPAND
+    expanded = !expanded
+    window.codioAssessmentsHelper.send(action)
   }
 
   const getValidHtml = (text) => {
@@ -467,16 +464,11 @@
     updateFooterButtons()
   }
 
-  const updateHtml = () => {
+  const refreshResultAndFooter = () => {
     if (!assessment) {
       return
     }
-    // processing, new state/results
-    const assessmentState = getAssessmentState()
-    $('.check-button').attr('disabled', assessmentState.isDisabled)
-    const blockActionsEl = $('.block-actions')
-    assessmentState.isDisabled ? blockActionsEl.removeClass('hide') : blockActionsEl.addClass('hide')
-
+    renderResult()
     updateFooterButtons()
   }
 
@@ -496,8 +488,7 @@
     renderContent()
     renderFooter()
     renderGuidance()
-    renderResult()
-    updateHtml()
+    refreshResultAndFooter()
     bindEvents()
     container.removeClass('hide')
   }
