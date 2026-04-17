@@ -8,102 +8,6 @@
 
   const LONG_OUTPUT_LENGTH = 20000
 
-  const dummyResult = {
-    "points": 40,
-    "guidance": "<p><strong>Rationale</strong></p>\n",
-    "usedAttempts": 1,
-    "timestamp": "2026-04-01T10:23:33.229Z",
-    "code": 2,
-    "output": "{\"sequence\": [{\"returnCode\": 0, \"stderr\": \"\", \"passed\": true, \"stdout\": \"5\\n\"}, {\"returnCode\": 0, \"stderr\": \"\", \"passed\": true, \"stdout\": \"4\\n\"}, {\"returnCode\": 0, \"stderr\": \"\", \"passed\": false, \"stdout\": \"6\\n\"}, {\"returnCode\": 0, \"stderr\": \"\", \"passed\": false, \"stdout\": \"2\\n\"}, {\"returnCode\": 0, \"stderr\": \"\", \"passed\": false, \"stdout\": \"2\\n\"}]}",
-    "state": "pass"
-  }
-  const dummySource = {
-    "name": "standard partial arguments count",
-    "showName": true,
-    "settings": {
-      "instructions": "<p><em>Instructions here</em></p>\n",
-      "command": "python code_tests/standard_partial_argumentscount.py",
-      "preExecuteCommand": "",
-      "timeout": 30
-    },
-    "options": {
-      "ignoreCase": false,
-      "ignoreWhitespaces": true,
-      "ignoreNewline": true,
-      "matchSubstring": false
-    },
-    "metadata": {
-      "tags": [
-        {
-          "name": "Assessment Type",
-          "value": "Standard Code Test"
-        },
-        {
-          "name": "Content",
-          "value": "code test"
-        },
-        {
-          "name": "Programming Language",
-          "value": "python"
-        }
-      ],
-      "files": [
-        "code_tests/standard_partial_argumentscount.py"
-      ],
-      "opened": []
-    },
-    "bloomsObjectiveLevel": "1",
-    "learningObjectives": "learning",
-    "guidance": "<p><strong>Rationale</strong></p>\n",
-    "showGuidanceAfterResponseOption": {
-      "type": "Always"
-    },
-    "maxAttemptsCount": 0,
-    "points": 100,
-    "showExpectedAnswerOption": {
-      "type": "Always"
-    },
-    "arePartialPointsAllowed": true,
-    "useMaximumScore": false,
-    "sequence": [
-      {
-        "arguments": "one two three four",
-        "input": "",
-        "output": "5",
-        "showFeedback": false,
-        "feedback": ""
-      },
-      {
-        "arguments": "1 2 3",
-        "input": "",
-        "output": "4",
-        "showFeedback": false,
-        "feedback": ""
-      },
-      {
-        "arguments": "1 2 3 4 5",
-        "input": "",
-        "output": "10",
-        "showFeedback": false,
-        "feedback": ""
-      },
-      {
-        "arguments": "1",
-        "input": "",
-        "output": "4",
-        "showFeedback": false,
-        "feedback": ""
-      },
-      {
-        "arguments": "1",
-        "input": "",
-        "output": "4",
-        "showFeedback": false,
-        "feedback": ""
-      }
-    ]
-  }
-
   const isEmptyObject = (obj) => {
     for (const prop in obj) {
       if (Object.hasOwn(obj, prop)) {
@@ -122,10 +26,6 @@
   const applyStateInitial = (data) => {
     const {state, result, ...dataWithoutState} = data
     assessment = dataWithoutState.assessment
-    // todo remove dummy start
-    assessment.source = dummySource
-    // todo remove dummy end
-
     assessmentOptions = dataWithoutState.options
 
     render()
@@ -133,26 +33,14 @@
 
   const applyState = (data) => {
     console.log('assessment iframe applyState', data)
-    // todo remove dummy start
-    data.result  = dummyResult
-    // todo remove dummy end
     currentData = data
     if (!assessment) {
       applyStateInitial(data)
       return
     }
-    if (data.state) {
-      renderResult()
-      refreshResultAndFooter()
-      renderGuidance()
-      return
-    }
-    // reset
-    if (currentData.state && !data.state) {
-      renderResult()
-      refreshResultAndFooter()
-      renderGuidance()
-    }
+    updateCheckButtonText()
+    refreshResultAndFooter()
+    renderGuidance()
   }
 
   const onCheck = (event) => {
@@ -222,7 +110,7 @@
     const checkVisibility = !showModify && assessmentOptions.useSubmitButtons
     const checkBtn = $('.check-button')
     updateVisibility(checkBtn, checkVisibility)
-    checkBtn.attr('disabled', isDisabled)
+    checkBtn.prop('disabled', isDisabled)
 
     const unblockVisibility = !teacherInStudentsProject && showModify
     updateVisibility($('.unblock-button'), unblockVisibility)
@@ -238,9 +126,14 @@
     diffBtn.html(diffBtnTitle)
   }
 
-  const renderFooter = () => {
+  const updateCheckButtonText = () => {
     const footerContainer = $('.codio-assessment-footer')
-    const caption = window.codioAssessmentsHelper.getButtonCaption(assessmentOptions, assessment.source.maxAttemptsCount)
+    const {result} = currentData || {}
+    const caption = window.codioAssessmentsHelper.getButtonCaption(
+      assessmentOptions,
+      assessment.source.maxAttemptsCount,
+      result?.usedAttempts || 0
+    )
     footerContainer.find('.check-button').html(caption)
   }
 
@@ -486,7 +379,7 @@
     const nameEl = container.find('.codio-assessment-name')
     assessment.source.showName ? nameEl.text(assessment.source.name) : nameEl.remove()
     renderContent()
-    renderFooter()
+    updateCheckButtonText()
     renderGuidance()
     refreshResultAndFooter()
     bindEvents()

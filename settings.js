@@ -2,10 +2,10 @@
   const collectSettings = () => {
     const instructions = $('#instructions').val()
     const command = $('#command').val();
-    const preExecCommand = $('#preExecCommand').val();
+    const preExecuteCommand = $('#preExecCommand').val();
     const timeout = parseInt($('#timeout').val(), 10);
 
-    return {instructions, command, preExecCommand, timeout};
+    return {instructions, command, preExecuteCommand, timeout};
   }
 
   const exportSettings = () => {
@@ -16,7 +16,7 @@
   const applySettings = (settings = {}) => {
     $('#instructions').val(settings.instructions || '');
     $('#command').val(settings.command || '');
-    $('#preExecCommand').val(settings.preExecCommand || '');
+    $('#preExecCommand').val(settings.preExecuteCommand || '');
     $('#timeout').val(settings.timeout || '');
   }
 
