@@ -292,7 +292,7 @@
     }
     const result = currentData?.result
     const state = processing ? window.codioAssessmentsHelper.States.PROGRESS : result?.state
-    const resultEl = $(`<div class="codio-assessment-result ${state}"></div>`)
+    const resultEl = $(`<div class="codio-assessment-result codio-assessment-block--topLeftArrow ${state}"></div>`)
 
     const assessmentStatus = window.codioAssessmentsHelper.getAssessmentResultStatus(
       assessment.source, result, processing
