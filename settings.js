@@ -1,11 +1,20 @@
 (function () {
+  const DEFAULT_TIMEOUT = 30
+
   const collectSettings = () => {
+    const errors = []
     const instructions = $('#instructions').val()
     const command = $('#command').val();
     const preExecuteCommand = $('#preExecCommand').val();
     const timeout = parseInt($('#timeout').val(), 10);
 
-    return {instructions, command, preExecuteCommand, timeout};
+    !instructions && errors.push('Instructions field must be completed');
+    !command && errors.push('Command field must be completed');
+
+    return {
+      data: {instructions, command, preExecuteCommand, timeout: timeout || DEFAULT_TIMEOUT},
+      errors
+    };
   }
 
   const exportSettings = () => {
@@ -17,7 +26,7 @@
     $('#instructions').val(settings.instructions || '');
     $('#command').val(settings.command || '');
     $('#preExecCommand').val(settings.preExecuteCommand || '');
-    $('#timeout').val(settings.timeout || '');
+    $('#timeout').val(settings.timeout || DEFAULT_TIMEOUT);
   }
 
   const processMessage = (jsonData) => {
