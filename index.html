@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Standard code test assessment</title>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/cash/8.1.5/cash.min.js"></script>
+  <script type="module">
+    import diffMatchPatch from 'https://cdn.jsdelivr.net/npm/diff-match-patch@1.0.5/+esm'
+    window.DiffMatchPatch = diffMatchPatch
+  </script>
+  <link type="text/css" rel="stylesheet" href="./index.css">
+  <link type="text/css" rel="stylesheet" href="../assessment-common/assessment.css">
+  <script type="text/javascript" src="../assessment-common/helper.js"></script>
+  <script type="text/javascript" src="./index.js"></script>
+</head>
+<body>
+  <div class="codio-assessment codio-assessment-code-output-compare hide">
+    <h3 class="codio-assessment-name"></h3>
+    <div class="codio-assessment-content">
+      <div class='codio-assessment-instructions'>
+        <div class='instructions-text'></div>
+      </div>
+    </div>
+    <div class="codio-assessment-guidance-block"></div>
+    <div class="codio-assessment-footer">
+      <button class='unblock-button codio-assessment-button'>Modify answer</button>
+      <button class='check-button codio-assessment-button'></button>
+      <button class='reset-button codio-assessment-button'>Reset</button>
+      <button class='diff-button codio-assessment-button'>Diff</button>
+    </div>
+    <div class="codio-assessment-results-block"></div>
+  </div>
+</body>
+</html>

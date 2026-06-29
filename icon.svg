@@ -1,0 +1,18 @@
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" viewBox="0 0 32 23.68">
+ <g transform="matrix(.064 0 0 .064 0 -43.671)">
+  <g transform="translate(-125,610)">
+   <g fill-rule="evenodd">
+    <path fill="#3590cf" d="m140 72.362c-10 0-15 5-15 15v340c0 10 5 15 15 15h470c10 0 15-5 15-15v-340c0-10-5-15-15-15z"/>
+    <path fill="#8c97b2" d="m150 137.36h450v280h-450z"/>
+   </g>
+   <circle cy="102.36" cx="170" r="12" fill="#f00"/>
+   <circle cy="102.36" cx="205" r="12" fill="#ff0"/>
+   <circle cy="102.36" cx="240" r="12" fill="#0f0"/>
+   <g fill="#fff" fill-rule="evenodd">
+    <path d="m254.46 269.78 60-20c12-4 7-19-5-15l-60 20c-15 5-15 25 0 30l60 20c12 4 17-11 5-15z"/>
+    <path d="m344.46 349.78 50-150c4-12 19-7 15 5l-50 150c-4 12-19 7-15-5z"/>
+    <path d="m439.46 249.78c-12-4-7-19 5-15l60 20c15 5 15 25 0 30l-60 20c-12 4-17-11-5-15l60-20z"/>
+   </g>
+  </g>
+ </g>
+</svg>
